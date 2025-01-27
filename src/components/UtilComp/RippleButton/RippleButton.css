@@ -1,0 +1,18 @@
+button::before {
+    content: "";
+    position: absolute;
+    top: var(--ypos, 0);
+    left: var(--xpos, 0);
+    transform: translate(-50%, -50%);
+    height: 0;
+    width: 0;
+    background: #9A6735;
+    border-radius: 50%;
+    transition: height 0.4s ease, width 0.4s ease;
+  }
+  
+  button:hover::before {
+    height: 400px;
+    width: 100%; /* Ensure the ripple effect covers the full width of the button */
+  }
+  
