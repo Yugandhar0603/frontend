@@ -1,84 +1,71 @@
+// 
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { Header, Footer } from './components';
-import Hero from './components/Hero/Hero';
-import About from './components/About/About';
-import Contact from './components/Contact/Contact';
-import Profile from './components/Profile/Profile';
+import Navbar from './components/Navbar'; // Import the Navbar component
+import Login from './components/Auth/Login';
+import LiveMatches from './components/LiveMatches/LiveMatches';
 import CreateMatch from './components/Organizer/CreateMatch';
 import ManageTeams from './components/Organizer/ManageTeams';
-import Venues from './components/Organizer/Venues';
 import Matches from './components/Matches/Matches';
-import LiveMatches from './components/LiveMatches/LiveMatches';
-import Registration from './components/Auth/Registration';
-import ScoreManager from './components/Organizer/ScoreManager';
 
-// Create a wrapper component to use the useLocation hook
-function AppContent() {
-    const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-    const location = useLocation();
+// Wrapper to render Navbar with child routes
+function ProtectedLayout({ children }) {
+    const isAuthenticated = sessionStorage.getItem('token'); // Check if token exists
 
-    // Don't show footer on auth pages
-    const showFooter = location.pathname !== '/auth';
+    if (!isAuthenticated) {
+        return <Navigate to="/" replace />; // Redirect to login if not authenticated
+    }
 
     return (
-        <div className="flex flex-col min-h-screen bg-gray-100">
-            {isAuthenticated && <Header />}
-            <main className="flex-grow">
-                <Routes>
-                    <Route 
-                        path="/" 
-                        element={isAuthenticated ? <Navigate to="/dashboard" /> : <Navigate to="/auth" />} 
-                    />
-                    <Route 
-                        path="/auth" 
-                        element={isAuthenticated ? <Navigate to="/dashboard" /> : <Registration />} 
-                    />
-                    <Route 
-                        path="/dashboard" 
-                        element={isAuthenticated ? <LiveMatches /> : <Navigate to="/auth" />} 
-                    />
-                    <Route path="/about" element={<About />} />
-                    <Route path="/contact" element={<Contact />} />
-                    <Route 
-                        path="/profile" 
-                        element={isAuthenticated ? <Profile /> : <Navigate to="/auth" />} 
-                    />
-                    <Route 
-                        path="/create-match" 
-                        element={isAuthenticated ? <CreateMatch /> : <Navigate to="/auth" />} 
-                    />
-                    <Route 
-                        path="/manage-teams" 
-                        element={isAuthenticated ? <ManageTeams /> : <Navigate to="/auth" />} 
-                    />
-                    <Route 
-                        path="/venues" 
-                        element={isAuthenticated ? <Venues /> : <Navigate to="/auth" />} 
-                    />
-                    <Route 
-                        path="/matches" 
-                        element={isAuthenticated ? <Matches /> : <Navigate to="/auth" />} 
-                    />
-                    <Route 
-                        path="/score-manager/:matchId" 
-                        element={isAuthenticated ? <ScoreManager /> : <Navigate to="/auth" />} 
-                    />
-                </Routes>
-            </main>
-            {showFooter && <Footer className="mt-auto" />}
-        </div>
+        <>
+            <Navbar /> {/* Navbar is always displayed */}
+            <main>{children}</main>
+        </>
     );
 }
 
-// Main App component
-function App() {
+export function App() {
     return (
         <BrowserRouter>
-            <AppContent />
+            <Routes>
+                {/* Public routes */}
+                <Route path="/" element={<Login />} />
+
+                {/* Protected routes */}
+                <Route
+                    path="/live-matches"
+                    element={
+                        <ProtectedLayout>
+                            <LiveMatches />
+                        </ProtectedLayout>
+                    }
+                />
+                <Route
+                    path="/create-match"
+                    element={
+                        <ProtectedLayout>
+                            <CreateMatch />
+                        </ProtectedLayout>
+                    }
+                />
+                <Route
+                    path="/manage-teams"
+                    element={
+                        <ProtectedLayout>
+                            <ManageTeams />
+                        </ProtectedLayout>
+                    }
+                />
+                <Route
+                    path="/matches"
+                    element={
+                        <ProtectedLayout>
+                            <Matches />
+                        </ProtectedLayout>
+                    }
+                />
+            </Routes>
         </BrowserRouter>
     );
 }
-
-export default App;
