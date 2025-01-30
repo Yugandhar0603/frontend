@@ -21,6 +21,8 @@ function CreateMatch() {
         date: '',
         time: ''
     });
+    const [selectedSlotId, setSelectedSlotId] = useState(null);
+    const [userId, setUserId] = useState('');
 
     // Fetch stadiums on component mount
     useEffect(() => {
@@ -41,10 +43,8 @@ function CreateMatch() {
         const fetchTimeSlots = async () => {
             if (selectedDate && matchDetails.stadiumId) {
                 try {
-                    // Format the date to YYYY-MM-DD
                     const formattedDate = selectedDate.split('T')[0];
                     const url = `http://localhost:8089/stadium-slot/stadiumslot/${matchDetails.stadiumId}/${formattedDate}`;
-              
                     console.log('Fetching slots with URL:', url);
 
                     const response = await fetch(url, {
@@ -128,19 +128,76 @@ function CreateMatch() {
         }));
     };
 
-    const handleTimeSelect = (selectedTime) => {
-        setMatchDetails(prev => ({
-            ...prev,
-            time: selectedTime
-        }));
+    // Modified handleTimeSelect to store the entire slot data
+    const handleTimeSelect = (timeRange, slotData) => {
+        console.log('Selected slot data:', slotData);
+        setMatchDetails({
+            ...matchDetails,
+            time: timeRange
+        });
+        setSelectedSlotId(slotData.stadiumSlotId);
     };
 
-    const handleNext = () => {
-        if (matchDetails.venue && matchDetails.date && matchDetails.time) {
-            setStep(2);
-        } else {
-            alert('Please select venue, date and time slot');
+    // Modified createBooking to use the selected slot ID
+    const createBooking = async () => {
+        try {
+            const userId = 1; // Hardcoded for testing
+            
+            const bookingData = {
+                id: 1,
+                stadiumSlotId: selectedSlotId,
+                userId: userId,
+                bookingDate: selectedDate.split('T')[0],
+                status: "PENDING"
+            };
+
+            console.log('Sending booking data:', bookingData);
+
+            const response = await fetch('http://localhost:1721/bookings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(bookingData)
+            });
+
+            console.log('Response status:', response.status);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Error response:', errorText);
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log('Booking created successfully:', data);
+            return true;
+        } catch (error) {
+            console.error('Error creating booking:', error);
+            alert(`Failed to create booking: ${error.message}`);
+            return false;
         }
+    };
+
+    const handleNext = async () => {
+        if (!selectedSlotId) {
+            alert('Please select a time slot');
+            return;
+        }
+
+        if (!userId) {
+            alert('Please enter a User ID');
+            return;
+        }
+
+        const bookingSuccess = await createBooking();
+        if (!bookingSuccess) {
+            alert('Failed to create booking. Please try again.');
+            return;
+        }
+
+        setStep(2);
     };
 
     return (
@@ -215,6 +272,21 @@ function CreateMatch() {
                                             </td>
                                         </tr>
 
+                                        {/* User ID input field */}
+                                        <tr>
+                                            <td className="px-6 py-4 text-white font-semibold">User ID</td>
+                                            <td className="px-6 py-4">
+                                                <input
+                                                    type="number"
+                                                    value={userId}
+                                                    onChange={(e) => setUserId(e.target.value)}
+                                                    className="w-full px-4 py-2 bg-gray-800 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                    placeholder="Enter User ID"
+                                                    required
+                                                />
+                                            </td>
+                                        </tr>
+
                                         {/* Time Slots */}
                                         {selectedDate && (
                                             <tr>
@@ -230,7 +302,10 @@ function CreateMatch() {
                                                                 <button
                                                                     key={slotData.stadiumSlotId}
                                                                     type="button"
-                                                                    onClick={() => handleTimeSelect(timeRange)}
+                                                                    onClick={() => {
+                                                                        console.log('Clicking slot:', slotData);
+                                                                        handleTimeSelect(timeRange, slotData);
+                                                                    }}
                                                                     className={`px-3 py-2 rounded-lg font-semibold transition-all duration-300 ${
                                                                         matchDetails.time === timeRange
                                                                             ? 'bg-blue-600 text-white shadow-lg transform scale-105'
