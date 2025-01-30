@@ -8,6 +8,7 @@ function CreateMatch() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const [step, setStep] = useState(1);
+    
     const [selectedDate, setSelectedDate] = useState('');
     const [availableSlots, setAvailableSlots] = useState([]);
     const [stadiums, setStadiums] = useState([]);
@@ -54,7 +55,7 @@ function CreateMatch() {
                             'Accept': 'application/json'
                         }
                     });
-                
+                    
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
@@ -130,19 +131,18 @@ function CreateMatch() {
 
     // Modified handleTimeSelect to store the entire slot data
     const handleTimeSelect = (timeRange, slotData) => {
-        console.log('Selected slot data:', slotData);
-        setMatchDetails({
-            ...matchDetails,
+        setMatchDetails(prev => ({
+            ...prev,
             time: timeRange
-        });
+        }));
         setSelectedSlotId(slotData.stadiumSlotId);
+        console.log(slotData.stadiumSlotId)
     };
 
     // Modified createBooking to use the selected slot ID
     const createBooking = async () => {
         try {
-            const bookingData = {
-                id: 1,
+            let bookingData = {
                 stadiumSlotId: selectedSlotId,
                 userId: parseInt(userId),
                 bookingDate: selectedDate.split('T')[0],
@@ -151,33 +151,28 @@ function CreateMatch() {
 
             console.log('Sending booking data:', bookingData);
 
-            const response = await fetch('http://localhost:1721/bookings', {
+            const response = await fetch("http://localhost:1721/bookings", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json'
                 },
                 body: JSON.stringify(bookingData)
             });
 
-            console.log('Response status:', response.status);
-
             if (!response.ok) {
-                const errorText = await response.text();
-                console.error('Error response:', errorText);
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             const data = await response.json();
-            console.log('Booking created successfully:', data);
+            console.log('Booking created:', data);
             return true;
         } catch (error) {
             console.error('Error creating booking:', error);
-            alert(`Failed to create booking: ${error.message}`);
             return false;
         }
     };
 
+    // Modified handleNext to create booking
     const handleNext = async () => {
         if (!selectedSlotId) {
             alert('Please select a time slot');
@@ -300,10 +295,7 @@ function CreateMatch() {
                                                                 <button
                                                                     key={slotData.stadiumSlotId}
                                                                     type="button"
-                                                                    onClick={() => {
-                                                                        console.log('Clicking slot:', slotData);
-                                                                        handleTimeSelect(timeRange, slotData);
-                                                                    }}
+                                                                    onClick={() => handleTimeSelect(timeRange, slotData)}
                                                                     className={`px-3 py-2 rounded-lg font-semibold transition-all duration-300 ${
                                                                         matchDetails.time === timeRange
                                                                             ? 'bg-blue-600 text-white shadow-lg transform scale-105'
