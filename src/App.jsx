@@ -8,6 +8,7 @@ import LiveMatches from './components/LiveMatches/LiveMatches';
 import CreateMatch from './components/Organizer/CreateMatch';
 import ManageTeams from './components/Organizer/ManageTeams';
 import Matches from './components/Matches/Matches';
+import ManageScore from './components/Organizer/ManageScore';
 
 // Wrapper to render Navbar with child routes
 function ProtectedLayout({ children }) {
@@ -62,6 +63,14 @@ export function App() {
                     element={
                         <ProtectedLayout>
                             <Matches />
+                        </ProtectedLayout>
+                    }
+                />
+                <Route
+                    path="/score-manager/:matchId"
+                    element={
+                        <ProtectedLayout>
+                            <ManageScore />
                         </ProtectedLayout>
                     }
                 />

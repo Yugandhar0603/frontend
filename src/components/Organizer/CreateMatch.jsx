@@ -10,44 +10,78 @@ function CreateMatch() {
     const [step, setStep] = useState(1);
     const [selectedDate, setSelectedDate] = useState('');
     const [availableSlots, setAvailableSlots] = useState([]);
-    
+    const [stadiums, setStadiums] = useState([]);
     const [matchDetails, setMatchDetails] = useState({
         team1: '',
         team1ManagerId: '',
         team2: '',
         team2ManagerId: '',
         venue: '',
+        stadiumId: '',
         date: '',
         time: ''
     });
 
-    // Trivandrum stadiums
-    const venues = [
-        "Greenfield International Stadium",
-        "St. Xavier's College Ground",
-        "Medical College Ground",
-        "Jimmy George Indoor Stadium",
-        "Kerala University Stadium",
-        "Central Stadium",
-        "Agricultural College Ground"
-    ];
-
-    // Randomly select 5 venues
-    const [selectedVenues] = useState(() => {
-        const shuffled = [...venues].sort(() => 0.5 - Math.random());
-        return shuffled.slice(0, 5);
-    });
-
-    // Generate time slots
+    // Fetch stadiums on component mount
     useEffect(() => {
-        if (selectedDate) {
-            const slots = [
-                "09:00 AM", "11:00 AM", "01:00 PM", 
-                "03:00 PM", "05:00 PM", "07:00 PM", "09:00 PM"
-            ];
-            setAvailableSlots(slots);
-        }
-    }, [selectedDate]);
+        const fetchStadiums = async () => {
+            try {
+                const response = await fetch('http://localhost:1718/api/stadiums');
+                const data = await response.json();
+                setStadiums(data);
+            } catch (error) {
+                console.error('Error fetching stadiums:', error);
+            }
+        };
+        fetchStadiums();
+    }, []);
+
+    // Modified useEffect for time slots
+    useEffect(() => {
+        const fetchTimeSlots = async () => {
+            if (selectedDate && matchDetails.stadiumId) {
+                try {
+                    // Format the date to YYYY-MM-DD
+                    const formattedDate = selectedDate.split('T')[0];
+                    const url = `http://localhost:8089/stadium-slot/stadiumslot/${matchDetails.stadiumId}/${formattedDate}`;
+              
+                    console.log('Fetching slots with URL:', url);
+
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        }
+                    });
+                
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    console.log('Slots response:', data);
+                    setAvailableSlots(data.slots || []);
+                } catch (error) {
+                    console.error('Error fetching time slots:', error);
+                    setAvailableSlots([]);
+                }
+            }
+        };
+        fetchTimeSlots();
+    }, [selectedDate, matchDetails.stadiumId]);
+
+    const formatTime = (timeString) => {
+        // Convert 24-hour time string to 12-hour format
+        const [hours, minutes] = timeString.split(':');
+        const date = new Date();
+        date.setHours(parseInt(hours), parseInt(minutes), 0);
+        return date.toLocaleTimeString('en-US', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            hour12: true 
+        });
+    };
 
     const teams = [
         "Royal Challengers Bangalore",
@@ -69,10 +103,19 @@ function CreateMatch() {
     };
 
     const handleChange = (e) => {
-        setMatchDetails({
-            ...matchDetails,
-            [e.target.name]: e.target.value
-        });
+        if (e.target.name === 'venue') {
+            const stadium = stadiums.find(s => s.stadiumName === e.target.value);
+            setMatchDetails({
+                ...matchDetails,
+                venue: e.target.value,
+                stadiumId: stadium ? stadium.stadiumId : ''
+            });
+        } else {
+            setMatchDetails({
+                ...matchDetails,
+                [e.target.name]: e.target.value
+            });
+        }
     };
 
     const handleDateChange = (e) => {
@@ -147,8 +190,10 @@ function CreateMatch() {
                                                     required
                                                 >
                                                     <option value="">Select Stadium</option>
-                                                    {selectedVenues.map((venue) => (
-                                                        <option key={venue} value={venue}>{venue}</option>
+                                                    {stadiums.map((stadium) => (
+                                                        <option key={stadium.stadiumId} value={stadium.stadiumName}>
+                                                            {stadium.stadiumName}
+                                                        </option>
                                                     ))}
                                                 </select>
                                             </td>
@@ -176,20 +221,26 @@ function CreateMatch() {
                                                 <td className="px-6 py-4 text-white font-semibold">Time Slot</td>
                                                 <td className="px-6 py-4">
                                                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                                        {availableSlots.map((slot) => (
-                                                            <button
-                                                                key={slot}
-                                                                type="button"
-                                                                onClick={() => handleTimeSelect(slot)}
-                                                                className={`px-3 py-2 rounded-lg font-semibold transition-all duration-300 ${
-                                                                    matchDetails.time === slot
-                                                                        ? 'bg-blue-600 text-white shadow-lg transform scale-105'
-                                                                        : 'bg-gray-700 text-white hover:bg-gray-600'
-                                                                }`}
-                                                            >
-                                                                {slot}
-                                                            </button>
-                                                        ))}
+                                                        {availableSlots.map((slotData) => {
+                                                            const startTime = formatTime(slotData.slot.startTime);
+                                                            const endTime = formatTime(slotData.slot.endTime);
+                                                            const timeRange = `${startTime} - ${endTime}`;
+                                                            
+                                                            return (
+                                                                <button
+                                                                    key={slotData.stadiumSlotId}
+                                                                    type="button"
+                                                                    onClick={() => handleTimeSelect(timeRange)}
+                                                                    className={`px-3 py-2 rounded-lg font-semibold transition-all duration-300 ${
+                                                                        matchDetails.time === timeRange
+                                                                            ? 'bg-blue-600 text-white shadow-lg transform scale-105'
+                                                                            : 'bg-gray-700 text-white hover:bg-gray-600'
+                                                                    }`}
+                                                                >
+                                                                    {timeRange}
+                                                                </button>
+                                                            );
+                                                        })}
                                                     </div>
                                                 </td>
                                             </tr>
