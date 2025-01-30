@@ -194,30 +194,25 @@ function CreateMatch() {
     };
 
     return (
-        <div 
-            className="min-h-screen w-full"
+        <div className="min-h-screen w-full relative"
             style={{
                 backgroundImage: `url(${backgroundImage})`,
                 backgroundSize: '100% 100%',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',
                 backgroundAttachment: 'fixed',
-                position: 'absolute',
+                position: 'fixed',
                 top: 0,
                 left: 0,
                 right: 0,
                 bottom: 0,
-                overflowY: 'auto'
+                zIndex: '-1'
             }}
         >
-            <div className="container mx-auto px-4 py-8">
+            <div className="container mx-auto px-4 h-screen flex items-center justify-center relative">
                 <div className="max-w-6xl mx-auto">
                     {step === 1 ? (
                         <>
-                            <h2 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-blue-600 to-green-600 text-transparent bg-clip-text">
-                                Create Match
-                            </h2>
-                            
                             <div className="max-w-2xl mx-auto bg-black rounded-lg shadow-xl overflow-hidden">
                                 <table className="w-full">
                                     <thead>
