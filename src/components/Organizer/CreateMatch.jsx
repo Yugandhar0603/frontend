@@ -141,12 +141,10 @@ function CreateMatch() {
     // Modified createBooking to use the selected slot ID
     const createBooking = async () => {
         try {
-            const userId = 1; // Hardcoded for testing
-            
             const bookingData = {
                 id: 1,
                 stadiumSlotId: selectedSlotId,
-                userId: userId,
+                userId: parseInt(userId),
                 bookingDate: selectedDate.split('T')[0],
                 status: "PENDING"
             };
