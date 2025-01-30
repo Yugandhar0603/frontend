@@ -1,8 +1,7 @@
-// 
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import Navbar from './components/Navbar'; // Import the Navbar component
+import Navbar from './components/Navbar';
 import Login from './components/Auth/Login';
 import LiveMatches from './components/LiveMatches/LiveMatches';
 import CreateMatch from './components/Organizer/CreateMatch';
