@@ -14,43 +14,50 @@ function Registration() {
         isPlayer: false,
         isOrganizer: false
     });
+    const [error, setError] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError('');
         
         try {
-            // Convert role selections to role IDs
-            const roleIds = [2]; // Everyone is a fan (2)
-            if (formData.isPlayer) roleIds.push(1); // Player role
-            if (formData.isOrganizer) roleIds.push(3); // Organizer role
+            const allRolesId = [3];  // Fan (3) is default
+            if (formData.isPlayer) allRolesId.push(1);  // Player role ID
+            if (formData.isOrganizer) allRolesId.push(2);  // Organizer role ID
 
-            const registrationData = {
+            const requestBody = {
                 name: formData.name,
                 password: formData.password,
-                allRolesId: roleIds
+                allRolesId: allRolesId
             };
+
+            console.log('Sending registration request:', requestBody);
 
             const response = await fetch('http://localhost:8090/api/auth/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
-                body: JSON.stringify(registrationData)
+                body: JSON.stringify(requestBody)
             });
 
+            console.log('Registration response status:', response.status);
+
             if (!response.ok) {
-                throw new Error('Registration failed');
+                const errorData = await response.text();
+                console.error('Registration error response:', errorData);
+                throw new Error(errorData || 'Registration failed');
             }
 
             const data = await response.json();
-            console.log('Registration successful:', data);
-            
-            // After successful registration, redirect to login page
-            navigate('/');
-            
-        } catch (error) {
-            console.error('Error during registration:', error);
-            // Handle error (show error message to user)
+            console.log('Registration success:', data);
+
+            alert('Registration successful! Please login.');
+            navigate('/login');
+        } catch (err) {
+            console.error('Registration error:', err);
+            setError(err.message || 'An error occurred during registration');
         }
     };
 
@@ -74,21 +81,21 @@ function Registration() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="max-w-md w-full space-y-8 bg-white/90 backdrop-blur-sm p-8 rounded-lg shadow-2xl"
+                className="max-w-md w-full space-y-8 bg-black/40 backdrop-blur-sm p-8 rounded-xl shadow-2xl border border-white/10"
             >
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.2 }}
                 >
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                    <h2 className="mt-6 text-center text-3xl font-extrabold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
                         Create new account
                     </h2>
-                    <p className="mt-2 text-center text-sm text-gray-600">
+                    <p className="mt-2 text-center text-sm text-gray-300">
                         Already have an account?{' '}
                         <Link
                             to="/"
-                            className="font-medium text-green-600 hover:text-green-500 transition-colors duration-200"
+                            className="font-medium text-blue-400 hover:text-blue-300 transition-colors duration-200"
                         >
                             Sign in
                         </Link>
@@ -102,65 +109,75 @@ function Registration() {
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.4 }}
                 >
-                    <div>
-                        <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                            Username
-                        </label>
-                        <input
-                            id="name"
-                            name="name"
-                            type="text"
-                            required
-                            value={formData.name}
-                            onChange={handleChange}
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
-                        />
-                    </div>
-
-                    <div>
-                        <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                            Password
-                        </label>
-                        <input
-                            id="password"
-                            name="password"
-                            type="password"
-                            required
-                            value={formData.password}
-                            onChange={handleChange}
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
-                        />
-                    </div>
-
                     <div className="space-y-4">
-                        <div className="flex items-center">
-                            <input
-                                id="isPlayer"
-                                name="isPlayer"
-                                type="checkbox"
-                                checked={formData.isPlayer}
-                                onChange={handleChange}
-                                className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                            />
-                            <label htmlFor="isPlayer" className="ml-2 block text-sm text-gray-900">
-                                I want to be a player
+                        <div>
+                            <label htmlFor="name" className="block text-sm font-medium text-gray-300">
+                                Username
                             </label>
+                            <input
+                                id="name"
+                                name="name"
+                                type="text"
+                                required
+                                value={formData.name}
+                                onChange={handleChange}
+                                className="mt-1 block w-full px-4 py-3 bg-black/30 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                placeholder="Enter your username"
+                            />
                         </div>
 
-                        <div className="flex items-center">
-                            <input
-                                id="isOrganizer"
-                                name="isOrganizer"
-                                type="checkbox"
-                                checked={formData.isOrganizer}
-                                onChange={handleChange}
-                                className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                            />
-                            <label htmlFor="isOrganizer" className="ml-2 block text-sm text-gray-900">
-                                I want to be an organizer
+                        <div>
+                            <label htmlFor="password" className="block text-sm font-medium text-gray-300">
+                                Password
                             </label>
+                            <input
+                                id="password"
+                                name="password"
+                                type="password"
+                                required
+                                value={formData.password}
+                                onChange={handleChange}
+                                className="mt-1 block w-full px-4 py-3 bg-black/30 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                placeholder="Enter your password"
+                            />
+                        </div>
+
+                        <div className="space-y-4 pt-4">
+                            <div className="flex items-center p-4 bg-black/20 rounded-lg border border-gray-600/30 hover:border-blue-500/30 transition-colors duration-200">
+                                <input
+                                    id="isPlayer"
+                                    name="isPlayer"
+                                    type="checkbox"
+                                    checked={formData.isPlayer}
+                                    onChange={handleChange}
+                                    className="h-4 w-4 text-blue-500 focus:ring-blue-500 border-gray-500 rounded bg-black/30"
+                                />
+                                <label htmlFor="isPlayer" className="ml-3 block text-sm text-gray-300">
+                                    I want to be a player
+                                </label>
+                            </div>
+
+                            <div className="flex items-center p-4 bg-black/20 rounded-lg border border-gray-600/30 hover:border-blue-500/30 transition-colors duration-200">
+                                <input
+                                    id="isOrganizer"
+                                    name="isOrganizer"
+                                    type="checkbox"
+                                    checked={formData.isOrganizer}
+                                    onChange={handleChange}
+                                    className="h-4 w-4 text-blue-500 focus:ring-blue-500 border-gray-500 rounded bg-black/30"
+                                />
+                                <label htmlFor="isOrganizer" className="ml-3 block text-sm text-gray-300">
+                                    I want to be an organizer
+                                </label>
+                            </div>
                         </div>
                     </div>
+
+                    {error && (
+                        <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg text-sm">
+                            {error}
+                        </div>
+                    )}
 
                     <motion.div
                         whileHover={{ scale: 1.01 }}
@@ -168,7 +185,7 @@ function Registration() {
                     >
                         <button
                             type="submit"
-                            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
+                            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
                         >
                             Register
                         </button>
