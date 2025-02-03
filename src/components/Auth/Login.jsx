@@ -19,6 +19,8 @@ function Login() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            console.log('Attempting login with:', formData); // Debug log
+
             const response = await fetch('http://localhost:8090/api/auth/validate/user', {
                 method: 'POST',
                 headers: {
@@ -27,9 +29,29 @@ function Login() {
                 body: JSON.stringify(formData)
             });
 
-            if (response.ok) {
-                const data = await response.json();
+            console.log('Response status:', response.status); // Debug log
+
+            if (response.status === 403) {
+                setError('Invalid username or password');
+                return;
+            }
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log('Login response:', data); // Debug log
+
+            if (data && data.token) {
+                // Store token and user data
                 sessionStorage.setItem('token', data.token);
+                sessionStorage.setItem('userData', JSON.stringify({
+                    name: data.name,
+                    roles: data.allRoles
+                }));
+
+                // Update Redux store
                 dispatch(loginSuccess({
                     user: {
                         name: data.name,
@@ -37,11 +59,14 @@ function Login() {
                         token: data.token
                     }
                 }));
+
                 navigate('/live-matches');
+            } else {
+                setError('Invalid response from server');
             }
         } catch (error) {
             console.error('Error during login:', error);
-            setError(error.message || 'Invalid username or password');
+            setError('Login failed. Please try again.');
         }
     };
 
@@ -51,6 +76,8 @@ function Login() {
             ...formData,
             [name]: value
         });
+        // Clear error when user starts typing
+        if (error) setError('');
     };
 
     return (

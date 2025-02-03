@@ -7,6 +7,20 @@ function Navbar() {
     const navigate = useNavigate();
     const location = useLocation();
 
+    // Check if user has Player role
+    const hasPlayerRole = () => {
+        try {
+            const userData = sessionStorage.getItem('userData');
+            if (!userData) return false;
+            
+            const parsedUserData = JSON.parse(userData);
+            return parsedUserData.roles.includes('PLAYER');
+        } catch (error) {
+            console.error('Error checking player role:', error);
+            return false;
+        }
+    };
+
     // Add function to check if link is active
     const isActive = (path) => {
         return location.pathname === path;
@@ -100,6 +114,31 @@ function Navbar() {
                         }`}
                     >
                         Matches
+                    </Link>
+
+                    {/* Conditionally render MyMatches link */}
+                    {hasPlayerRole() && (
+                        <Link 
+                            to="/my-matches" 
+                            className={`text-lg font-medium transition-colors duration-200 ${
+                                isActive('/my-matches')
+                                ? 'text-blue-400 border-b-2 border-blue-400'
+                                : 'text-white hover:text-gray-300'
+                            }`}
+                        >
+                            My Matches
+                        </Link>
+                    )}
+
+                    <Link 
+                        to="/profile" 
+                        className={`text-lg font-medium transition-colors duration-200 ${
+                            isActive('/profile') 
+                            ? 'text-blue-400 border-b-2 border-blue-400' 
+                            : 'text-white hover:text-gray-300'
+                        }`}
+                    >
+                        Profile
                     </Link>
                 </div>
 

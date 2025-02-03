@@ -24,22 +24,38 @@ function CreateMatch() {
     });
     const [selectedSlotId, setSelectedSlotId] = useState(null);
     const [userId, setUserId] = useState('');
+    const [bookingId, setBookingId] = useState(null);
 
     // Fetch stadiums on component mount
     useEffect(() => {
         const fetchStadiums = async () => {
             try {
-                const response = await fetch('http://localhost:1718/api/stadiums');
+                const token = sessionStorage.getItem('token');
+                const response = await fetch('http://localhost:1718/api/stadiums', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
                 const data = await response.json();
+                console.log('Stadiums data:', data);
                 setStadiums(data);
             } catch (error) {
                 console.error('Error fetching stadiums:', error);
+                setStadiums([]);
             }
         };
         fetchStadiums();
     }, []);
 
-    // Modified useEffect for time slots
+    // Modified useEffect for time slots with better error handling and logging
     useEffect(() => {
         const fetchTimeSlots = async () => {
             if (selectedDate && matchDetails.stadiumId) {
@@ -47,26 +63,43 @@ function CreateMatch() {
                     const formattedDate = selectedDate.split('T')[0];
                     const url = `http://localhost:8089/stadium-slot/stadiumslot/${matchDetails.stadiumId}/${formattedDate}`;
                     console.log('Fetching slots with URL:', url);
+                    console.log('Stadium ID:', matchDetails.stadiumId);
+                    console.log('Selected Date:', formattedDate);
 
+                    const token = sessionStorage.getItem('token');
                     const response = await fetch(url, {
                         method: 'GET',
                         headers: {
                             'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`,
                             'Accept': 'application/json'
                         }
                     });
                     
                     if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('Error response:', errorText);
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     
                     const data = await response.json();
                     console.log('Slots response:', data);
-                    setAvailableSlots(data.slots || []);
+                    
+                    if (data && Array.isArray(data.slots)) {
+                        setAvailableSlots(data.slots);
+                    } else {
+                        console.error('Invalid slots data format:', data);
+                        setAvailableSlots([]);
+                    }
                 } catch (error) {
                     console.error('Error fetching time slots:', error);
                     setAvailableSlots([]);
                 }
+            } else {
+                console.log('Missing required data:', {
+                    selectedDate,
+                    stadiumId: matchDetails.stadiumId
+                });
             }
         };
         fetchTimeSlots();
@@ -93,8 +126,71 @@ function CreateMatch() {
         "Bangalore Bulls"
     ];
 
-    const handleSubmit = (e) => {
+    const createTeam = async (teamName, managerId, captainId) => {
+        try {
+            const teamData = {
+                name: teamName,
+                managerId: parseInt(managerId),
+                captainId: parseInt(captainId),
+                bookingId: bookingId
+            };
+
+            console.log('Creating team with data:', teamData);
+
+            const response = await fetch('http://localhost:9090/teams', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(teamData)
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Error response:', errorText);
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log('Team created successfully:', data);
+            return true;
+        } catch (error) {
+            console.error('Error creating team:', error);
+            alert(`Failed to create team: ${error.message}`);
+            return false;
+        }
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (!bookingId) {
+            alert('Booking ID not found. Please ensure booking was created successfully.');
+            return;
+        }
+
+        // Create team 1
+        const team1Success = await createTeam(
+            matchDetails.team1,
+            matchDetails.team1ManagerId,
+            matchDetails.team1CaptainId // Make sure to add this field to your form
+        );
+        if (!team1Success) {
+            return;
+        }
+
+        // Create team 2
+        const team2Success = await createTeam(
+            matchDetails.team2,
+            matchDetails.team2ManagerId,
+            matchDetails.team2CaptainId // Make sure to add this field to your form
+        );
+        if (!team2Success) {
+            return;
+        }
+
+        // If both teams are created successfully, proceed
         dispatch(addMatch({
             id: Date.now(),
             ...matchDetails,
@@ -106,6 +202,7 @@ function CreateMatch() {
     const handleChange = (e) => {
         if (e.target.name === 'venue') {
             const stadium = stadiums.find(s => s.stadiumName === e.target.value);
+            console.log('Selected stadium:', stadium);
             setMatchDetails({
                 ...matchDetails,
                 venue: e.target.value,
@@ -121,6 +218,7 @@ function CreateMatch() {
 
     const handleDateChange = (e) => {
         const newDate = e.target.value;
+        console.log('Selected date:', newDate);
         setSelectedDate(newDate);
         setMatchDetails(prev => ({
             ...prev,
@@ -143,6 +241,7 @@ function CreateMatch() {
     const createBooking = async () => {
         try {
             let bookingData = {
+               
                 stadiumSlotId: selectedSlotId,
                 userId: parseInt(userId),
                 bookingDate: selectedDate.split('T')[0],
@@ -160,19 +259,24 @@ function CreateMatch() {
             });
 
             if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Error response:', errorText);
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             const data = await response.json();
             console.log('Booking created:', data);
+            // Store the booking ID from the response
+            setBookingId(data.id);
             return true;
         } catch (error) {
             console.error('Error creating booking:', error);
+            alert(`Failed to create booking: ${error.message}`);
             return false;
         }
     };
 
-    // Modified handleNext to create booking
+    // Modified handleNext to ensure bookingId is set
     const handleNext = async () => {
         if (!selectedSlotId) {
             alert('Please select a time slot');
@@ -194,25 +298,30 @@ function CreateMatch() {
     };
 
     return (
-        <div className="min-h-screen w-full relative"
+        <div 
+            className="min-h-screen w-full"
             style={{
                 backgroundImage: `url(${backgroundImage})`,
                 backgroundSize: '100% 100%',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',
                 backgroundAttachment: 'fixed',
-                position: 'fixed',
+                position: 'absolute',
                 top: 0,
                 left: 0,
                 right: 0,
                 bottom: 0,
-                zIndex: '-1'
+                overflowY: 'auto'
             }}
         >
-            <div className="container mx-auto px-4 h-screen flex items-center justify-center relative">
+            <div className="container mx-auto px-4 py-8">
                 <div className="max-w-6xl mx-auto">
                     {step === 1 ? (
                         <>
+                            <h2 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-blue-600 to-green-600 text-transparent bg-clip-text">
+                                Create Match
+                            </h2>
+                            
                             <div className="max-w-2xl mx-auto bg-black rounded-lg shadow-xl overflow-hidden">
                                 <table className="w-full">
                                     <thead>
@@ -276,32 +385,38 @@ function CreateMatch() {
                                         </tr>
 
                                         {/* Time Slots */}
-                                        {selectedDate && (
+                                        {selectedDate && matchDetails.stadiumId && (
                                             <tr>
                                                 <td className="px-6 py-4 text-white font-semibold">Time Slot</td>
                                                 <td className="px-6 py-4">
-                                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                                        {availableSlots.map((slotData) => {
-                                                            const startTime = formatTime(slotData.slot.startTime);
-                                                            const endTime = formatTime(slotData.slot.endTime);
-                                                            const timeRange = `${startTime} - ${endTime}`;
-                                                            
-                                                            return (
-                                                                <button
-                                                                    key={slotData.stadiumSlotId}
-                                                                    type="button"
-                                                                    onClick={() => handleTimeSelect(timeRange, slotData)}
-                                                                    className={`px-3 py-2 rounded-lg font-semibold transition-all duration-300 ${
-                                                                        matchDetails.time === timeRange
-                                                                            ? 'bg-blue-600 text-white shadow-lg transform scale-105'
-                                                                            : 'bg-gray-700 text-white hover:bg-gray-600'
-                                                                    }`}
-                                                                >
-                                                                    {timeRange}
-                                                                </button>
-                                                            );
-                                                        })}
-                                                    </div>
+                                                    {availableSlots.length > 0 ? (
+                                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                                            {availableSlots.map((slotData) => {
+                                                                const startTime = formatTime(slotData.slot.startTime);
+                                                                const endTime = formatTime(slotData.slot.endTime);
+                                                                const timeRange = `${startTime} - ${endTime}`;
+                                                                
+                                                                return (
+                                                                    <button
+                                                                        key={slotData.stadiumSlotId}
+                                                                        type="button"
+                                                                        onClick={() => handleTimeSelect(timeRange, slotData)}
+                                                                        className={`px-3 py-2 rounded-lg font-semibold transition-all duration-300 ${
+                                                                            matchDetails.time === timeRange
+                                                                                ? 'bg-blue-600 text-white shadow-lg transform scale-105'
+                                                                                : 'bg-gray-700 text-white hover:bg-gray-600'
+                                                                        }`}
+                                                                    >
+                                                                        {timeRange}
+                                                                    </button>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="text-yellow-500">
+                                                            No available time slots for this date
+                                                        </div>
+                                                    )}
                                                 </td>
                                             </tr>
                                         )}
@@ -347,7 +462,7 @@ function CreateMatch() {
                                                             value={matchDetails.team1}
                                                             onChange={handleChange}
                                                             className="w-full px-4 py-2 bg-gray-800 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                            placeholder="Enter your team name"
+                                                            placeholder="Enter team name"
                                                             required
                                                         />
                                                     </td>
@@ -356,12 +471,26 @@ function CreateMatch() {
                                                     <td className="px-6 py-4 text-white font-semibold">Manager ID</td>
                                                     <td className="px-6 py-4">
                                                         <input
-                                                            type="text"
+                                                            type="number"
                                                             name="team1ManagerId"
                                                             value={matchDetails.team1ManagerId}
                                                             onChange={handleChange}
                                                             className="w-full px-4 py-2 bg-gray-800 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                             placeholder="Enter Manager ID"
+                                                            required
+                                                        />
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td className="px-6 py-4 text-white font-semibold">Captain ID</td>
+                                                    <td className="px-6 py-4">
+                                                        <input
+                                                            type="number"
+                                                            name="team1CaptainId"
+                                                            value={matchDetails.team1CaptainId}
+                                                            onChange={handleChange}
+                                                            className="w-full px-4 py-2 bg-gray-800 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                            placeholder="Enter Captain ID"
                                                             required
                                                         />
                                                     </td>
@@ -390,7 +519,7 @@ function CreateMatch() {
                                                             value={matchDetails.team2}
                                                             onChange={handleChange}
                                                             className="w-full px-4 py-2 bg-gray-800 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                                            placeholder="Enter your team name"
+                                                            placeholder="Enter team name"
                                                             required
                                                         />
                                                     </td>
@@ -399,12 +528,26 @@ function CreateMatch() {
                                                     <td className="px-6 py-4 text-white font-semibold">Manager ID</td>
                                                     <td className="px-6 py-4">
                                                         <input
-                                                            type="text"
+                                                            type="number"
                                                             name="team2ManagerId"
                                                             value={matchDetails.team2ManagerId}
                                                             onChange={handleChange}
                                                             className="w-full px-4 py-2 bg-gray-800 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                                                             placeholder="Enter Manager ID"
+                                                            required
+                                                        />
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td className="px-6 py-4 text-white font-semibold">Captain ID</td>
+                                                    <td className="px-6 py-4">
+                                                        <input
+                                                            type="number"
+                                                            name="team2CaptainId"
+                                                            value={matchDetails.team2CaptainId}
+                                                            onChange={handleChange}
+                                                            className="w-full px-4 py-2 bg-gray-800 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                                            placeholder="Enter Captain ID"
                                                             required
                                                         />
                                                     </td>
