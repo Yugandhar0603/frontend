@@ -21,6 +21,20 @@ function Navbar() {
         }
     };
 
+    // Check if user has Organizer role
+    const hasOrganizerRole = () => {
+        try {
+            const userData = sessionStorage.getItem('userData');
+            if (!userData) return false;
+            
+            const parsedUserData = JSON.parse(userData);
+            return parsedUserData.roles.includes('ORGANIZER');
+        } catch (error) {
+            console.error('Error checking organizer role:', error);
+            return false;
+        }
+    };
+
     // Add function to check if link is active
     const isActive = (path) => {
         return location.pathname === path;
@@ -66,55 +80,57 @@ function Navbar() {
                         Home
                     </Link>
                     
-                    {/* Organizer Dropdown */}
-                    <div className="relative" ref={dropdownRef}>
-                        <button
-                            onClick={() => setIsOrganizerOpen(!isOrganizerOpen)}
-                            className={`text-lg font-medium transition-colors duration-200 ${
-                                isActive('/create-match') || isActive('/manage-teams')
-                                ? 'text-blue-400 border-b-2 border-blue-400'
-                                : 'text-white hover:text-gray-300'
-                            }`}
-                        >
-                            Organize
-                        </button>
-                        
-                        {isOrganizerOpen && (
-                            <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
-                                <button
-                                    onClick={() => handleNavigation('/create-match')}
-                                    className={`block w-full text-left px-4 py-2 text-lg font-medium ${
-                                        isActive('/create-match')
-                                        ? 'bg-gray-100 text-blue-600'
-                                        : 'text-gray-800 hover:bg-gray-100'
-                                    }`}
-                                >
-                                    Create Match
-                                </button>
-                                <button
-                                    onClick={() => handleNavigation('/manage-teams')}
-                                    className={`block w-full text-left px-4 py-2 text-lg font-medium ${
-                                        isActive('/manage-teams')
-                                        ? 'bg-gray-100 text-blue-600'
-                                        : 'text-gray-800 hover:bg-gray-100'
-                                    }`}
-                                >
-                                    Manage Teams
-                                </button>
-                                <button
-                                    onClick={() => handleNavigation('/manage-score')}
-                                    className={`block w-full text-left px-4 py-2 text-lg font-medium ${
-                                        isActive('/manage-score')
-                                        ? 'bg-gray-100 text-blue-600'
-                                        : 'text-gray-800 hover:bg-gray-100'
-                                    }`}
-                                >
-                                    Manage Score
-                                </button>
-                            </div>
+                    {/* Conditionally render Organizer Dropdown */}
+                    {hasOrganizerRole() && (
+                        <div className="relative" ref={dropdownRef}>
+                            <button
+                                onClick={() => setIsOrganizerOpen(!isOrganizerOpen)}
+                                className={`text-lg font-medium transition-colors duration-200 ${
+                                    isActive('/create-match') || isActive('/manage-teams')
+                                    ? 'text-blue-400 border-b-2 border-blue-400'
+                                    : 'text-white hover:text-gray-300'
+                                }`}
+                            >
+                                Organize
+                            </button>
+                            
+                            {isOrganizerOpen && (
+                                <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                                    <button
+                                        onClick={() => handleNavigation('/create-match')}
+                                        className={`block w-full text-left px-4 py-2 text-lg font-medium ${
+                                            isActive('/create-match')
+                                            ? 'bg-gray-100 text-blue-600'
+                                            : 'text-gray-800 hover:bg-gray-100'
+                                        }`}
+                                    >
+                                        Create Match
+                                    </button>
+                                    <button
+                                        onClick={() => handleNavigation('/manage-teams')}
+                                        className={`block w-full text-left px-4 py-2 text-lg font-medium ${
+                                            isActive('/manage-teams')
+                                            ? 'bg-gray-100 text-blue-600'
+                                            : 'text-gray-800 hover:bg-gray-100'
+                                        }`}
+                                    >
+                                        Manage Teams
+                                    </button>
+                                    <button
+                                        onClick={() => handleNavigation('/manage-score')}
+                                        className={`block w-full text-left px-4 py-2 text-lg font-medium ${
+                                            isActive('/manage-score')
+                                            ? 'bg-gray-100 text-blue-600'
+                                            : 'text-gray-800 hover:bg-gray-100'
+                                        }`}
+                                    >
+                                        Manage Score
+                                    </button>
+                                </div>
 
-                        )}
-                    </div>
+                            )}
+                        </div>
+                    )}
                     <Link 
                         to="/view-match" 
                         className={`text-lg font-medium transition-colors duration-200 ${
