@@ -101,9 +101,30 @@ function Navbar() {
                                 >
                                     Manage Teams
                                 </button>
+                                <button
+                                    onClick={() => handleNavigation('/manage-score')}
+                                    className={`block w-full text-left px-4 py-2 text-lg font-medium ${
+                                        isActive('/manage-score')
+                                        ? 'bg-gray-100 text-blue-600'
+                                        : 'text-gray-800 hover:bg-gray-100'
+                                    }`}
+                                >
+                                    Manage Score
+                                </button>
                             </div>
+
                         )}
                     </div>
+                    <Link 
+                        to="/view-match" 
+                        className={`text-lg font-medium transition-colors duration-200 ${
+                            isActive('/matches')
+                            ? 'text-blue-400 border-b-2 border-blue-400'
+                            : 'text-white hover:text-gray-300'
+                        }`}
+                    >
+                        LIVE Matches
+                    </Link>
                     
                     <Link 
                         to="/matches" 
