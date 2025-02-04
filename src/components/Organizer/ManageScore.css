@@ -1,208 +1,574 @@
-.manage-score-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
+:root {
+    --primary-blue: #2196F3;
+    --primary-green: #4CAF50;
+    --accent-orange: #FF9800;
+    --accent-red: #f44336;
+    --dark-bg: #1a1a1a;
+    --card-bg: #2d2d2d;
+    --text-white: #ffffff;
+    --text-light: #e0e0e0;
+    --text-gray: #bbbbbb;
+    --gradient-dark: linear-gradient(145deg, #1a1a1a, #2d2d2d);
 }
 
-.score-card {
-    background-color: #ffffff;
+.page-container {
+    min-height: 100vh;
+    max-height: 100vh;
+    background: var(--bg-gradient);
+    color: var(--text-primary);
+    padding: 1.5rem;
+    overflow: hidden;
+}
+
+.card {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+}
+
+.card-light {
+    background: var(--card-bg-light);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+}
+
+.primary-button {
+    background: var(--primary-color);
+    color: var(--text-primary);
+    border: none;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    margin-bottom: 20px;
-}
-
-.score-header {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.score-header h2 {
-    color: #2d3748;
-    font-size: 24px;
+    padding: 1rem 2rem;
+    font-size: 1.2rem;
     font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
-.teams-score-container {
-    margin-bottom: 20px;
+.primary-button:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
 }
 
-.team-score {
-    padding: 15px;
-    background-color: #f7fafc;
-    border-radius: 6px;
+.danger-button {
+    background: var(--danger-color);
+    color: var(--text-primary);
 }
 
-.score-info {
+.danger-button:hover {
+    background: var(--danger-hover);
+}
+
+.section-title {
+    font-size: 1.8rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.form-group select,
+.form-group input {
+    width: 100%;
+    padding: 1rem;
+    background: #3d3d3d;
+    border: 1px solid #4d4d4d;
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+}
+
+.form-group select:focus,
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #2d2d2d;
+    padding: 2rem;
+    border-radius: 12px;
+    min-width: 350px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.modal-content h3 {
+    color: #4CAF50;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    text-align: center;
+}
+
+.modal-content select {
+    width: 100%;
+    padding: 1rem;
+    background: #3d3d3d;
+    border: 1px solid #4d4d4d;
+    border-radius: 6px;
+    color: white;
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    cursor: pointer;
+}
+
+.modal-content select:focus {
+    outline: none;
+    border-color: #4CAF50;
+}
+
+.modal-content button {
+    width: 100%;
+    padding: 1rem;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.modal-content button:hover {
+    background: #45a049;
+}
+
+@media (max-width: 768px) {
+    .page-container {
+        padding: 1rem;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+.manage-score-container {
+    max-width: 1000px;
+    margin: 20px auto;
+    padding: 25px;
+    background: var(--gradient-dark);
+    border-radius: 15px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    color: var(--text-white);
+}
+
+.match-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: rgba(33, 150, 243, 0.1);
+    border-radius: 12px;
+    border: 1px solid rgba(33, 150, 243, 0.2);
+}
+
+.match-header h2 {
+    color: var(--primary-blue);
+    font-size: 2.2rem;
+    margin-bottom: 15px;
+}
+
+.innings-indicator {
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-top: 0.5rem;
+}
+
+.score-display {
+    background: rgba(45, 45, 45, 0.9);
+    padding: 25px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+}
+
+.current-score {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.current-score h3 {
+    color: var(--accent-orange);
+    font-size: 1.8rem;
+    margin-bottom: 15px;
 }
 
 .score {
-    font-size: 28px;
+    font-size: 3rem;
     font-weight: bold;
-    color: #2d3748;
+    color: var(--text-white);
+    margin: 15px 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .overs {
-    font-size: 18px;
-    color: #4a5568;
+    color: var(--text-light);
+    font-size: 1.4rem;
 }
 
-.batsman-info {
+.batting-details, .bowling-details {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.batting-details h4,
+.bowling-details h4 {
+    color: var(--primary-blue);
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+}
+
+.player-row {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.batsman-name {
-    font-weight: 600;
-    color: #2d3748;
-    margin-right: 10px;
-}
-
-.batsman-score {
-    color: #4a5568;
+    justify-content: space-between;
+    gap: 20px;
+    color: var(--text-light);
 }
 
 .recent-balls {
+    margin-top: 25px;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+}
+
+.recent-balls h4 {
+    color: var(--primary-blue);
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+}
+
+.balls-container {
     display: flex;
-    gap: 10px;
-    margin: 20px 0;
-    padding: 10px;
-    background-color: #f7fafc;
-    border-radius: 6px;
-    overflow-x: auto;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
 }
 
 .ball {
-    width: 30px;
-    height: 30px;
+    min-width: 45px;
+    height: 45px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background-color: #e2e8f0;
     font-weight: bold;
+    font-size: 1.1rem;
+    background: var(--primary-green);
+    color: var(--text-white);
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .ball.wicket {
-    background-color: #fc8181;
-    color: white;
-}
-
-.scoring-controls {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+    background: var(--accent-red);
 }
 
 .score-buttons {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 1rem;
+    padding: 1.5rem;
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    margin-top: 2rem;
 }
 
-.run-btn {
-    padding: 12px;
+.run-button, .wicket-button, .extra-button {
+    padding: 1rem;
     border: none;
-    border-radius: 6px;
-    background-color: #4299e1;
-    color: white;
+    border-radius: 8px;
+    font-size: 1.2rem;
     font-weight: bold;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.3s ease;
 }
 
-.run-btn:hover {
-    background-color: #3182ce;
+.run-button {
+    background: var(--primary-color);
+    color: var(--text-primary);
 }
 
-.extra-buttons {
+.run-button:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+}
+
+.wicket-button {
+    background: var(--danger-color);
+    color: var(--text-primary);
+}
+
+.wicket-button:hover {
+    background: var(--danger-hover);
+    transform: translateY(-2px);
+}
+
+.extra-button {
+    background: var(--extra-color);
+    color: var(--text-primary);
+}
+
+.extra-button:hover {
+    background: var(--extra-hover);
+    transform: translateY(-2px);
+}
+
+.end-innings {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.end-innings-button {
+    padding: 15px 30px;
+    background: var(--accent-red);
+    color: var(--text-white);
+    border: none;
+    border-radius: 10px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.end-innings-button:hover {
+    background: #d32f2f;
+    transform: translateY(-2px);
+}
+
+.setup-container {
+    background: rgba(45, 45, 45, 0.9);
+    padding: 25px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.setup-title {
+    color: var(--primary-blue);
+    font-size: 2rem;
+    text-align: center;
+    margin-bottom: 25px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.setup-form {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 10px;
+    gap: 2rem;
 }
 
-.wide, .no-ball, .wicket, .change-strike {
-    padding: 12px;
-    border: none;
-    border-radius: 6px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s;
+.setup-section {
+    background: var(--card-bg-light);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
 }
 
-.wide {
-    background-color: #48bb78;
-    color: white;
+.form-group {
+    margin-bottom: 20px;
 }
 
-.wide:hover {
-    background-color: #38a169;
+.form-group label {
+    display: block;
+    color: var(--text-light);
+    margin-bottom: 8px;
+    font-size: 1.1rem;
 }
 
-.no-ball {
-    background-color: #ecc94b;
-    color: #2d3748;
-}
-
-.no-ball:hover {
-    background-color: #d69e2e;
-}
-
-.wicket {
-    background-color: #f56565;
-    color: white;
-}
-
-.wicket:hover {
-    background-color: #e53e3e;
-}
-
-.change-strike {
-    background-color: #805ad5;
-    color: white;
-}
-
-.change-strike:hover {
-    background-color: #6b46c1;
-}
-
-.no-ball-buttons {
-    display: flex;
-    gap: 5px;
-}
-
-.ball-btn {
+.form-group select,
+.form-group input {
     width: 100%;
     padding: 12px;
-    border: none;
-    border-radius: 6px;
-    background-color: #4299e1;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    margin-top: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: var(--text-white);
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
 }
 
-.ball-btn:hover {
-    background-color: #3182ce;
+.form-group select:focus,
+.form-group input:focus {
+    border-color: var(--primary-blue);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+}
+
+.setup-submit {
+    background: var(--primary-color);
+    color: var(--text-primary);
+    padding: 1rem;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.setup-submit:hover {
+    background: var(--primary-hover);
 }
 
 @media (max-width: 768px) {
-    .score-buttons {
-        grid-template-columns: repeat(4, 1fr);
+    .manage-score-container {
+        margin: 10px;
+        padding: 15px;
     }
 
-    .extra-buttons {
-        grid-template-columns: 1fr;
-    }
-
-    .no-ball-buttons {
+    .player-row {
         flex-direction: column;
+        gap: 10px;
     }
+
+    .ball-type-checkboxes {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .score {
+        font-size: 2.5rem;
+    }
+
+    .ball {
+        min-width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .match-header h2 {
+        font-size: 1.8rem;
+    }
+
+    .score {
+        font-size: 2rem;
+    }
+
+    .ball {
+        min-width: 35px;
+        height: 35px;
+        font-size: 0.9rem;
+    }
+}
+
+.scoring-controls {
+    background: rgba(45, 45, 45, 0.9);
+    padding: 25px;
+    border-radius: 15px;
+    margin-top: 30px;
+}
+
+.ball-details {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.runs-input {
+    margin-bottom: 20px;
+}
+
+.runs-input label {
+    color: var(--text-light);
+    margin-right: 15px;
+    font-size: 1.1rem;
+}
+
+.runs-input select {
+    padding: 8px 15px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: var(--text-white);
+    font-size: 1.1rem;
+}
+
+.ball-type-checkboxes {
+    display: flex;
+    gap: 25px;
+    margin-bottom: 25px;
+}
+
+.ball-type-checkboxes label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-light);
+    cursor: pointer;
+}
+
+.record-ball-button {
+    width: 100%;
+    padding: 15px;
+    background: var(--primary-green);
+    color: var(--text-white);
+    border: none;
+    border-radius: 10px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.record-ball-button:hover:not(:disabled) {
+    background: #45a049;
+    transform: translateY(-2px);
+}
+
+.record-ball-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Special ball types */
+.ball.wide {
+    background: var(--primary-blue);
+}
+
+.ball.no-ball {
+    background: var(--accent-orange);
+}
+
+.ball.boundary-four {
+    background: #9c27b0;
+}
+
+.ball.boundary-six {
+    background: #e91e63;
 }
